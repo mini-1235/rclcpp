@@ -409,7 +409,13 @@ Executor::spin_some_impl(std::chrono::nanoseconds max_duration, bool exhaustive)
     // if the last wait triggered a collection rebuild, we need to call
     // wait_for_work once more, in order to do a collection rebuild and collect
     // events from the just added entities
-    entity_states_fully_polled = false;
+    if (exhaustive) {
+      entity_states_fully_polled = false;
+    } else {
+      // spin_some only collects work once, therefore the collection is repeated
+      // here, before any work was executed
+      wait_for_work(std::chrono::milliseconds(0));
+    }
   }
 
   // The logic of this while loop is as follows:
